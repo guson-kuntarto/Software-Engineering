@@ -167,3 +167,126 @@ Example: This document specifies the functional and non-functional requirements 
 | ID | Item | Action Owner | Target Date |
 | :--- | :--- | :--- | :--- |
 | TBD-1 | Finalize payment gateway provider | Product Manager | YYYY-MM-DD |
+
+
+# Software Design Documentation (SDD)
+
+**Project Name:** [Insert Project Name]  
+**Version:** 1.0.0  
+**Date:** YYYY-MM-DD  
+**Author(s):** [Your Name / Team]  
+
+---
+
+## 1. System Overview & Goals
+
+### 1.1 Summary
+> A brief 2–3 sentence summary explaining what this software does, who uses it, and the problem it solves.
+
+### 1.2 Design Goals
+* **[Goal 1]:** (e.g., Simple, flat codebase easy for solo maintainers)
+* **[Goal 2]:** (e.g., Fast load times under 200ms)
+* **[Goal 3]:** (e.g., Offline-first functionality)
+
+### 1.3 Constraints & Assumptions
+* **Tech Stack Constraints:** Written strictly in [e.g., TypeScript / Python].
+* **Database Constraints:** Must run locally on a single SQLite instance.
+* **Assumptions:** Users have a reliable broadband internet connection for initial setup.
+
+---
+
+## 2. Architectural Design
+
+### 2.1 High-Level Architecture
+> Describe how components talk to each other. You can use GitHub's native Mermaid syntax to draw a quick diagram:
+
+```mermaid
+graph LR
+    Client[Frontend Client] -->|REST API / JSON| Server[Backend API Server]
+    Server -->|Read/Write| DB[(Database)]
+    Server -->|Send Tasks| Worker[Background Worker]
+```
+
+### 2.2 Component Breakdown
+* **Client / Frontend:** Renders UI, manages user state, and interacts with the API.
+* **Server / Backend:** Processes business logic, validates data inputs, and enforces authorization rules.
+* **Database:** System of record for storing system resources.
+
+---
+
+## 3. Data & Storage Design
+
+### 3.1 Database Schema
+> Define your database tables or collection structures using Markdown tables.
+
+#### Table: `users`
+
+| Column Name | Data Type | Constraints | Description |
+| :--- | :--- | :--- | :--- |
+| `id` | INTEGER | PRIMARY KEY, AUTOINCREMENT | Unique record ID |
+| `username` | VARCHAR(50) | UNIQUE, NOT NULL | Account handle |
+| `created_at` | DATETIME | DEFAULT current_timestamp | Account timestamp |
+
+#### Table: `items`
+
+| Column Name | Data Type | Constraints | Description |
+| :--- | :--- | :--- | :--- |
+| `id` | INTEGER | PRIMARY KEY | Unique item ID |
+| `user_id` | INTEGER | FOREIGN KEY -> users(id) | Associated owner |
+| `title` | TEXT | NOT NULL | Item name |
+
+---
+
+## 4. API & Interface Design
+
+### 4.1 Authentication Approach
+> Explain how access is handled (e.g., Stateless HTTP-only session cookies, JWT in Authorization header).
+
+### 4.2 Key Endpoints
+
+#### `GET /api/items`
+* **Description:** Retrieves all items owned by the authenticated user.
+* **Response (200 OK):**
+  ```json
+  [
+    {
+      "id": 101,
+      "title": "Example Item Name",
+      "user_id": 1
+    }
+  ]
+  ```
+
+#### `POST /api/items`
+* **Description:** Creates a new item record.
+* **Request Body:**
+  ```json
+  {
+    "title": "New Item Name"
+  }
+  ```
+* **Response (201 Created):**
+  ```json
+  {
+    "id": 102,
+    "title": "New Item Name",
+    "user_id": 1
+  }
+  ```
+
+---
+
+## 5. Security & Resiliency
+
+* **Authentication & Permissions:** Only resource owners can edit or delete their data records.
+* **Data Validations:** Inputs are sanitized on the server side using validation schemas before processing queries.
+* **Error Handling:** Standardized error codes are returned to the client application (`400 Bad Request`, `401 Unauthorized`, `404 Not Found`, `500 Server Error`).
+
+---
+
+## 6. Infrastructure & Deployment
+
+* **Development Environment:** Spin up local testing setups using `docker-compose up` or simple startup scripts (`npm run dev`).
+* **Deployment Pipeline:** Merging code changes to the `main` branch automatically triggers unit tests and builds the application via [e.g., GitHub Actions].
+* **Production Hosting:** The application runs deployed on [e.g., a simple VPS / Render / Vercel].
+
